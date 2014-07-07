@@ -45,7 +45,7 @@ public class Execution {
   
 
         int D=  10800;
-        int K = 100;
+        int K = 1000;
         int batchSize= 1024;
 
         double tau =  1d;

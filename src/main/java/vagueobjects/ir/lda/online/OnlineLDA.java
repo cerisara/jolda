@@ -21,6 +21,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+import java.util.HashSet;
+
 import vagueobjects.ir.lda.online.matrix.Matrix;
 import vagueobjects.ir.lda.online.matrix.Vector;
 import vagueobjects.ir.lda.tokens.Documents;
@@ -47,6 +49,8 @@ public class OnlineLDA {
     private Matrix expELogBeta;
     private Matrix stats ;
     private Matrix gamma;
+    
+    private double[] tmptopics;
     /**
      * For a vector theta ~ Dir(alpha), computes E[log(theta)] given alpha.
      * @param W  - vocabulary length
@@ -72,8 +76,15 @@ public class OnlineLDA {
         //posterior over topics -beta is parameterized by lambda
         this.eLogBeta = dirichletExpectation(lambda);
         this.expELogBeta = exp(eLogBeta);
+        
+        tmptopics=new double[K];
     }
 
+    public interface WordTopic {
+    	public void getTopic(int doc, String word, double[] topic2prob);
+    }
+    public WordTopic word2topic = null;
+    
     private void expectationStep(Documents docs) {
         int [][] wordIds = docs.getTokenIds();
         int [][] wordCts = docs.getTokenCts();
@@ -112,11 +123,39 @@ public class OnlineLDA {
                 Vector eLogThetaD = dirichletExpectation(gammaD);
                 expELogThetaD = exp(eLogThetaD);
 
+                // phiNorm.length = nb de mots du document courant
                 phiNorm = expELogThetaD.dot(expELogBetaD).add(1E-100);
                 if (gammaD.closeTo(lastGamma, MEAN_CHANGE_THRESHOLD*K)) {
                     break;
                 }
             }
+
+            {
+            	// calcul de phi complet = distrib des topics par mot pour le document courant
+            	HashSet<Integer> allTopicsInThisDoc = new HashSet<Integer>();
+            	for (int w=0;w<ids.length;w++) {
+            		double s=0, bestScore=-Float.MAX_VALUE; int bestTopic=-1;
+            		for (int topic=0;topic<expELogThetaD.getLength();topic++) {
+            			double p = expELogThetaD.elementAt(topic) * expELogBetaD.getRow(topic).elementAt(w);
+            			if (p>bestScore) {
+            				bestScore=p; bestTopic=topic;
+            			}
+            			s+=p;
+            		}
+//        			System.out.println("doc "+d+" word "+docs.getToken(w)+" topic "+bestTopic);
+        			allTopicsInThisDoc.add(bestTopic);
+        			if (word2topic!=null) {
+        				for (int topic=0;topic<K;topic++) {
+        					double p = expELogThetaD.elementAt(topic) * expELogBetaD.getRow(topic).elementAt(w) / s;
+        					tmptopics[topic]=p;
+//        					System.out.println("doc "+d+" word "+w+" topic "+topic+" phi "+p);
+        				}
+    					word2topic.getTopic(d, docs.getToken(w), tmptopics);
+        			}
+            	}
+    			if (allTopicsInThisDoc.size()>1) System.out.println("doc "+d+" "+allTopicsInThisDoc);
+            }
+            
             gamma.setRow(d, gammaD);
             Matrix m = expELogThetaD.outer (cts.div(phiNorm));
             stats.incrementColumns(ids, m);
@@ -135,6 +174,12 @@ public class OnlineLDA {
         double bound = approxBound( docs);
 
         Matrix a = this.lambda.product(1 - rhot);
+        // stats est une matrice de Ntopics (rows) X Nvoc (columns)
+        // qui contient sum_t (?) phi_twk X n_tw
+        // chaque colonne est donc la distrib des topics pour un mot across documents
+        System.out.println("debug stats "+stats.getNumberOfRows()+" "+stats.getNumberOfColumns()+" "+docs.size());
+        // on peut calculer la "norme" du vecteur pour verifier:
+        
         Matrix b = (stats.product( (double )D/ docs.size())).add(eta);
         b = b.product(rhot);
         this.lambda = a.add(b);
@@ -146,7 +191,6 @@ public class OnlineLDA {
         this.batchCount++;
         return new Result(docs, D, bound, lambda);
     }
-
 
     double approxBound( Documents docs) {
         int[][] wordIds = docs.getTokenIds();
@@ -168,9 +212,9 @@ public class OnlineLDA {
                 Vector u = v.add(topics) ;
                 tMax = u.max();
 
+                // phiNorm contient la norme du vecteur de topics pour un mot X un doc
                 phiNorm.set(i, Math.log(sum(exp(u.add(-tMax)))) + tMax);
             }
-
             score += sum(cts.product(phiNorm));
         }
         score-= sum(gamma.add(-alpha).product(eLogTheta));

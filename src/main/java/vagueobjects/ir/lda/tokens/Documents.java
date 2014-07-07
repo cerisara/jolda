@@ -71,7 +71,7 @@ public class Documents {
             String doc = docs.get(docId);
             doc = doc.toLowerCase()
                     .replaceAll("-", " ")
-                    .replaceAll("[^a-z ]", "")
+                    .replaceAll("[^a-z ]", "") // what about numbers ? Warning: underscores
                     .replaceAll(" +", " ");
             Map<Integer,Integer> counts = new LinkedHashMap<Integer, Integer>();
             for(String token:  extractTokens(doc)){
