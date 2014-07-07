@@ -3,13 +3,13 @@
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="F:/xtof/git/ESBIRL/lib/commons-collections-2.1.1.jar"/>
-	<classpathentry kind="lib" path="F:/xtof/git/ESBIRL/lib/commons-io-2.4.jar"/>
-	<classpathentry kind="lib" path="F:/xtof/git/ESBIRL/lib/commons-lang3-3.1.jar"/>
-	<classpathentry kind="lib" path="F:/xtof/git/ESBIRL/lib/commons-logging-1.1.jar"/>
-	<classpathentry kind="lib" path="F:/xtof/git/ESBIRL/lib/commons-math3-3.2.jar"/>
-	<classpathentry kind="lib" path="F:/xtof/git/ESBIRL/lib/trove.jar"/>
-	<classpathentry kind="lib" path="F:/xtof/git/newmemm/jdageem-read-only/lib/commons-math-2.2.jar"/>
+	<classpathentry kind="lib" path="../ESBIRL/lib/commons-collections-2.1.1.jar"/>
+	<classpathentry kind="lib" path="../ESBIRL/lib/commons-io-2.4.jar"/>
+	<classpathentry kind="lib" path="../ESBIRL/lib/commons-lang3-3.1.jar"/>
+	<classpathentry kind="lib" path="../ESBIRL/lib/commons-logging-1.1.jar"/>
+	<classpathentry kind="lib" path="../ESBIRL/lib/commons-math3-3.2.jar"/>
+	<classpathentry kind="lib" path="../ESBIRL/lib/trove.jar"/>
+	<classpathentry kind="lib" path="../mate/lib/commons-math-2.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

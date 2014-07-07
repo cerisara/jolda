@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 public class PlainVocabulary implements Vocabulary{
     final List<String> strings =new ArrayList<String>();
@@ -36,6 +37,9 @@ public class PlainVocabulary implements Vocabulary{
         this.strings.addAll(strings);
     }
 
+    public PlainVocabulary(Set<String> voc) {
+        strings.addAll(voc);
+    }
     public PlainVocabulary(String path ) throws IOException {
         Scanner scanner = new Scanner(new File(path));
         while (scanner.hasNextLine()){

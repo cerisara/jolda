@@ -196,22 +196,18 @@ public class MatrixUtil {
             this.gd.reseedRandomGenerator(DEFAULT_SEED);
         }
 
-        double sample() {
-            try {
-                return gd.sample();
-            } catch (MathException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
         public double[][] batch(int W, int K) {
             double[][] result = new double[K][];
 
-            for (int k = 0; k < K; ++k) {
-                result[k] = new double[W];
-                for (int w = 0; w < W; ++w) {
-                    result[k][w] = sample();
+            try {
+                for (int k = 0; k < K; ++k) {
+                    result[k] = new double[W];
+                    for (int w = 0; w < W; ++w) {
+                        result[k][w] = gd.sample();
+                    }
                 }
+            } catch (MathException e) {
+                throw new RuntimeException(e);
             }
             return result;
         }

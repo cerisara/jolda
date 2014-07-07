@@ -73,8 +73,10 @@ public class OnlineLDA {
         this.batchCount = 0;
         //initialize the variational distribution q(beta|lambda)
         this.lambda = sampleGamma(W, K);
+        System.out.println("gamma sampled");
         //posterior over topics -beta is parameterized by lambda
         this.eLogBeta = dirichletExpectation(lambda);
+        System.out.println("dirichlet expectation done");
         this.expELogBeta = exp(eLogBeta);
         
         tmptopics=new double[K];
@@ -99,6 +101,7 @@ public class OnlineLDA {
 
         this.stats = lambda.shape();
         for (int d = 0; d < batchD; ++d) {
+            System.out.println("expect step "+d);
             int[] ids = wordIds[d];
             if(ids.length==0){
                 continue;
