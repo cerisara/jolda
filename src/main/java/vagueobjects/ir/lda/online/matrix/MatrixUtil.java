@@ -20,13 +20,12 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-import org.apache.commons.math.MathException;
-import org.apache.commons.math.distribution.GammaDistributionImpl;
-import org.apache.commons.math.special.Gamma;
+ */
 
 import java.util.Arrays;
+
+import org.apache.commons.math3.distribution.GammaDistribution;
+import org.apache.commons.math3.special.Gamma;
 
 public class MatrixUtil {
     static GammaSampling gd = new GammaSampling();
@@ -54,13 +53,13 @@ public class MatrixUtil {
     }
 
     public static Vector gammaLn(Vector v) {
-       int nc = v.data.length;
-       double[] result = new double[nc];
-       for (int k = 0; k < nc; ++k) {
-           result[k] = gammaLn(v.data[k]);
-       }
-       return new Vector(result);
-   }
+        int nc = v.data.length;
+        double[] result = new double[nc];
+        for (int k = 0; k < nc; ++k) {
+            result[k] = gammaLn(v.data[k]);
+        }
+        return new Vector(result);
+    }
 
 
     public static double gammaLn(double d){
@@ -185,29 +184,26 @@ public class MatrixUtil {
         return result;
     }
     static class GammaSampling   {
-        private final GammaDistributionImpl gd;
+        private final GammaDistribution gd;
         public final static long DEFAULT_SEED = 1000000001L;
         public final static double DEFAULT_ALPHA = 100d;
         public final static double DEFAULT_BETA = 0.01d;
 
 
         public GammaSampling( ) {
-            this.gd = new GammaDistributionImpl(DEFAULT_ALPHA, DEFAULT_BETA);
+            this.gd = new GammaDistribution(DEFAULT_ALPHA, DEFAULT_BETA);
             this.gd.reseedRandomGenerator(DEFAULT_SEED);
         }
 
         public double[][] batch(int W, int K) {
             double[][] result = new double[K][];
 
-            try {
-                for (int k = 0; k < K; ++k) {
-                    result[k] = new double[W];
-                    for (int w = 0; w < W; ++w) {
-                        result[k][w] = gd.sample();
-                    }
+            for (int k = 0; k < K; ++k) {
+                System.out.println("sampling init "+k);
+                result[k] = new double[W];
+                for (int w = 0; w < W; ++w) {
+                    result[k][w] = gd.sample();
                 }
-            } catch (MathException e) {
-                throw new RuntimeException(e);
             }
             return result;
         }

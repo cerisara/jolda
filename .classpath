@@ -9,7 +9,6 @@
 	<classpathentry kind="lib" path="../ESBIRL/lib/commons-logging-1.1.jar"/>
 	<classpathentry kind="lib" path="../ESBIRL/lib/commons-math3-3.2.jar"/>
 	<classpathentry kind="lib" path="../ESBIRL/lib/trove.jar"/>
-	<classpathentry kind="lib" path="../mate/lib/commons-math-2.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
