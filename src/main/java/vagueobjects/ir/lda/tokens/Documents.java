@@ -30,7 +30,7 @@ import java.util.*;
  * and builds  document representation as  2D arrays of token ids and counts.
  */
 public class Documents {
-    private final Vocabulary vocabulary;
+    private Vocabulary vocabulary;
     /**
      * wordIds[i][j] gives the jth unique token present in document i
      */
@@ -41,6 +41,8 @@ public class Documents {
      */
     private int[][] tokenCts;
 
+    public Documents() {}
+    
     public Documents(List<String> docs, Vocabulary vocab) {
         this.vocabulary = vocab;
         build(docs, vocab);

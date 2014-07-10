@@ -199,7 +199,6 @@ public class MatrixUtil {
             double[][] result = new double[K][];
 
             for (int k = 0; k < K; ++k) {
-                System.out.println("sampling init "+k);
                 result[k] = new double[W];
                 for (int w = 0; w < W; ++w) {
                     result[k][w] = gd.sample();

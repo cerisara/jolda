@@ -1,35 +1,10 @@
 package vagueobjects.ir.lda.online;
-/*
-Copyright (c) 2013 miberk
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-import java.util.HashSet;
 
 import vagueobjects.ir.lda.online.matrix.Matrix;
 import vagueobjects.ir.lda.online.matrix.Vector;
 import vagueobjects.ir.lda.tokens.Documents;
 
 import static vagueobjects.ir.lda.online.matrix.MatrixUtil.*;
-import static vagueobjects.ir.lda.online.matrix.MatrixUtil.dirichletExpectation;
-import static vagueobjects.ir.lda.online.matrix.MatrixUtil.sum;
 
 public class OnlineLDA {
     public final static double MEAN_CHANGE_THRESHOLD = 1e-5;
@@ -48,9 +23,8 @@ public class OnlineLDA {
     private Matrix eLogBeta;
     private Matrix expELogBeta;
     private Matrix stats ;
-    private Matrix gamma;
+    public Matrix gamma;
     
-    private double[] tmptopics;
     /**
      * For a vector theta ~ Dir(alpha), computes E[log(theta)] given alpha.
      * @param W  - vocabulary length
@@ -73,13 +47,11 @@ public class OnlineLDA {
         this.batchCount = 0;
         //initialize the variational distribution q(beta|lambda)
         this.lambda = sampleGamma(W, K);
-        System.out.println("gamma sampled");
+        System.out.println("gamma sampled "+this.lambda.getNumberOfRows()+"x"+this.lambda.getNumberOfColumns());
         //posterior over topics -beta is parameterized by lambda
         this.eLogBeta = dirichletExpectation(lambda);
         System.out.println("dirichlet expectation done");
         this.expELogBeta = exp(eLogBeta);
-        
-        tmptopics=new double[K];
     }
 
     public interface WordTopic {
@@ -101,7 +73,6 @@ public class OnlineLDA {
 
         this.stats = lambda.shape();
         for (int d = 0; d < batchD; ++d) {
-            System.out.println("expect step "+d);
             int[] ids = wordIds[d];
             if(ids.length==0){
                 continue;
@@ -132,37 +103,9 @@ public class OnlineLDA {
                     break;
                 }
             }
-
-            {
-            	// calcul de phi complet = distrib des topics par mot pour le document courant
-            	HashSet<Integer> allTopicsInThisDoc = new HashSet<Integer>();
-            	for (int w=0;w<ids.length;w++) {
-            		double s=0, bestScore=-Float.MAX_VALUE; int bestTopic=-1;
-            		for (int topic=0;topic<expELogThetaD.getLength();topic++) {
-            			double p = expELogThetaD.elementAt(topic) * expELogBetaD.getRow(topic).elementAt(w);
-            			if (p>bestScore) {
-            				bestScore=p; bestTopic=topic;
-            			}
-            			s+=p;
-            		}
-//        			System.out.println("doc "+d+" word "+docs.getToken(w)+" topic "+bestTopic);
-        			allTopicsInThisDoc.add(bestTopic);
-        			if (word2topic!=null) {
-        				for (int topic=0;topic<K;topic++) {
-        					double p = expELogThetaD.elementAt(topic) * expELogBetaD.getRow(topic).elementAt(w) / s;
-        					tmptopics[topic]=p;
-//        					System.out.println("doc "+d+" word "+w+" topic "+topic+" phi "+p);
-        				}
-    					word2topic.getTopic(d, docs.getToken(w), tmptopics);
-        			}
-            	}
-    			if (allTopicsInThisDoc.size()>1) System.out.println("doc "+d+" "+allTopicsInThisDoc);
-            }
-            
             gamma.setRow(d, gammaD);
             Matrix m = expELogThetaD.outer (cts.div(phiNorm));
             stats.incrementColumns(ids, m);
-
         }
 
         stats = stats.product(this.expELogBeta);
@@ -180,7 +123,6 @@ public class OnlineLDA {
         // stats est une matrice de Ntopics (rows) X Nvoc (columns)
         // qui contient sum_t (?) phi_twk X n_tw
         // chaque colonne est donc la distrib des topics pour un mot across documents
-        System.out.println("debug stats "+stats.getNumberOfRows()+" "+stats.getNumberOfColumns()+" "+docs.size());
         // on peut calculer la "norme" du vecteur pour verifier:
         
         Matrix b = (stats.product( (double )D/ docs.size())).add(eta);
